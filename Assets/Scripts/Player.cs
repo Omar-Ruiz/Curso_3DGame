@@ -14,11 +14,16 @@ public class Player : MonoBehaviour
     private float giroPendiente;
     private bool inGround = true;
 
+    bool dead = false;
+
+    private Animator animator;
+
 
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        animator = GetComponent<Animator>();
         rb.interpolation = RigidbodyInterpolation.Interpolate;
         rb.constraints |= RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
     }
@@ -34,6 +39,10 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (dead)
+        {
+            return;
+        }
         verticalInput = Input.GetAxis("Vertical");
         giroPendiente += Input.GetAxisRaw("Mouse X") * velocidadGiro;
 
@@ -41,6 +50,10 @@ public class Player : MonoBehaviour
         {
             if (inGround)
             {
+                animator.SetBool("jump", true);
+                animator.SetBool("idle", false);
+                animator.SetBool("run", false);
+
                 rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
                 inGround = false;
             }
@@ -56,8 +69,19 @@ public class Player : MonoBehaviour
         rb.MoveRotation(rb.rotation * turn);
         giroPendiente -= giroAplicado;
 
-        Vector3 movement = transform.forward * verticalInput * speed * Time.fixedDeltaTime;
-        rb.MovePosition(rb.position + movement);
+        if(verticalInput > 0)
+        {
+            animator.SetBool("idle", false);
+            animator.SetBool("run", true);
+            Vector3 movement = transform.forward * verticalInput * speed * Time.fixedDeltaTime;
+            rb.MovePosition(rb.position + movement);
+        }
+        else
+        {
+            animator.SetBool("idle", true);
+            animator.SetBool("run", false);
+        }
+        
 
     }
 
@@ -68,10 +92,13 @@ public class Player : MonoBehaviour
         if(collision.gameObject.tag == "Deadly")
         {
             Debug.Log("auch");
+            dead = true;
+            animator.SetBool("die", true);  
         }
-        else
+        if(collision.gameObject.tag == "Piso")
         {
-            
+            animator.SetBool("jump", false);   
+            animator.SetBool("idle", true);   
             inGround = true;
         }
     }
