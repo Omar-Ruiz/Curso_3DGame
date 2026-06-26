@@ -14,6 +14,8 @@ public class Player : MonoBehaviour
     private float giroPendiente;
     private bool inGround = true;
 
+    private Vector3 respawnPos = Vector3.zero;
+
     bool dead = false;
 
     private Animator animator;
@@ -122,7 +124,19 @@ public class Player : MonoBehaviour
             dead = true;
             
             animator.SetBool("die", true);  
+
+            Respawn();
         }
+
+        if(collider.gameObject.tag == "Respawn")
+        {
+            Debug.Log("Toque un respawn");
+
+            respawnPos = transform.position;
+            
+        }
+
+
 
         if(collider.gameObject.tag == "Finish")
         {
@@ -134,6 +148,14 @@ public class Player : MonoBehaviour
             animator.SetTrigger("victory");  
         }
         
+    }
+
+
+    void Respawn(){
+        animator.SetBool("die", false);  
+        dead = false;
+        rb.velocity = Vector3.zero;
+        transform.position= respawnPos;
     }
 
 }
